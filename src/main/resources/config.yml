@@ -1,0 +1,65 @@
+# EdPlugin configuration
+
+waystone:
+  # Cost to create a new waystone (charged via Vault). 0 disables the cost.
+  create-cost: 500.0
+  # Cost to teleport to a waystone. 0 disables the cost.
+  teleport-cost: 10.0
+
+jobs:
+  # Base currency paid per action before level multiplier is applied.
+  base-pay:
+    MINER: 4.0
+    LUMBERJACK: 3.0
+    FARMER: 3.0
+    HUNTER: 6.0
+  # Base exp gained per action.
+  base-exp:
+    MINER: 5.0
+    LUMBERJACK: 4.0
+    FARMER: 4.0
+    HUNTER: 6.0
+  # Exp required for level N = exp-per-level * N
+  exp-per-level: 100.0
+  max-level: 50
+  # Extra drop chance per job level (e.g. 0.005 = +0.5% double-drop chance per level)
+  bonus-drop-chance-per-level: 0.005
+  # Pay bonus multiplier per level (e.g. 0.01 = +1% pay per level)
+  pay-bonus-per-level: 0.01
+
+shop:
+  # Percentage fee taken by the server treasury on each shop sale (0.0 - 1.0)
+  tax-rate: 0.05
+
+respawn:
+  # Forced respawn delay in seconds. Player stays in a frozen spectator
+  # camera at their death location (or following a nearby player) until
+  # this expires - no free-fly, so no way to scout through walls.
+  delay-seconds: 10
+
+death-messages:
+  enabled: true
+  # %victim%, %killer%, %weapon% placeholders are supported.
+  templates:
+    - "%victim%(이)가 %killer%의 %weapon%에 정리당했다."
+    - "%victim%(이)가 %killer%한테 예의 없이 처리당했다."
+    - "%victim%: 아 시발 %killer% 뭐임"
+    - "%killer%가 %weapon%(으)로 %victim%을(를) 역사 속으로 보냈다."
+
+bounty:
+  # Bounty payout is proportional to the victim's held balance and job levels,
+  # not a fixed amount. Formula: base + (victim balance * balance-cut)
+  #   + (sum of victim job levels * per-level bonus), funded by server treasury.
+  base-amount: 200.0
+  victim-balance-cut: 0.1
+  per-job-level-bonus: 5.0
+  minimum-amount: 100.0
+  maximum-amount: 20000.0
+  # Bounty expires this many real-world days after being placed.
+  expire-days: 30
+  # Warn nearby players when within this many blocks of a bounty target.
+  warning-radius: 100.0
+  warning-cooldown-seconds: 60
+  ender-dragon:
+    enabled: true
+    amount: 5000.0

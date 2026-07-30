@@ -1,0 +1,38 @@
+name: EdPlugin
+version: '${project.version}'
+main: com.godlights.edplugin.EdPlugin
+api-version: '1.21'
+author: God-Lights
+description: Survival co-op plugin: waystones, jobs economy, shops, death spectate, bounties.
+softdepend: [Vault]
+
+commands:
+  waystone:
+    description: Manage and use waystones.
+    aliases: [ws]
+  jobs:
+    description: View and manage your jobs.
+  shop:
+    description: Manage a personal shop.
+  bounty:
+    description: View active bounties.
+  edplugin:
+    description: Admin command for EdPlugin.
+    aliases: [edp]
+
+permissions:
+  edplugin.admin:
+    description: Access to all EdPlugin admin commands.
+    default: op
+  edplugin.waystone.create:
+    description: Allows creating waystones.
+    default: op
+  edplugin.jobs.use:
+    description: Allows joining jobs and earning job income.
+    default: true
+  edplugin.shop.use:
+    description: Allows creating and using personal shops.
+    default: true
+  edplugin.bounty.use:
+    description: Allows viewing bounties.
+    default: true
