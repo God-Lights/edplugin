@@ -3,7 +3,7 @@ version: '${project.version}'
 main: com.godlights.edplugin.EdPlugin
 api-version: '1.21'
 author: God-Lights
-description: Survival co-op plugin: waystones, jobs economy, shops, death spectate, bounties.
+description: 'Survival co-op plugin: waystones, jobs economy, shops, death spectate, bounties.'
 softdepend: [Vault]
 
 commands:
