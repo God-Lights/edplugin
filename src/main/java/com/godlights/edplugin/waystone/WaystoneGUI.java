@@ -21,9 +21,6 @@ public final class WaystoneGUI implements Listener {
         void onSelect(Player player, Waystone waystone);
     }
 
-    private WaystoneGUI() {
-    }
-
     public static void open(Player player, WaystoneManager manager, String title, SelectionHandler handler) {
         List<Waystone> list = new ArrayList<>(manager.getAll().values());
         int rows = Math.max(1, Math.min(6, (list.size() / 9) + 1));
