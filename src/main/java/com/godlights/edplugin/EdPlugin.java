@@ -5,6 +5,7 @@ import com.godlights.edplugin.bounty.BountyListener;
 import com.godlights.edplugin.bounty.BountyManager;
 import com.godlights.edplugin.death.DeathMessageListener;
 import com.godlights.edplugin.economy.EconomyHook;
+import com.godlights.edplugin.economy.VaultEconomyBridge;
 import com.godlights.edplugin.jobs.JobsCommand;
 import com.godlights.edplugin.jobs.JobsListener;
 import com.godlights.edplugin.jobs.JobsManager;
@@ -15,6 +16,8 @@ import com.godlights.edplugin.shop.ShopManager;
 import com.godlights.edplugin.waystone.WaystoneCommand;
 import com.godlights.edplugin.waystone.WaystoneGUI;
 import com.godlights.edplugin.waystone.WaystoneManager;
+import net.milkbowl.vault.economy.Economy;
+import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class EdPlugin extends JavaPlugin {
@@ -29,9 +32,11 @@ public final class EdPlugin extends JavaPlugin {
     public void onEnable() {
         saveDefaultConfig();
 
-        economy = new EconomyHook();
-        if (!economy.setup(this)) {
-            getLogger().warning("Vault(경제 플러그인)를 찾을 수 없습니다. 돈이 필요한 기능이 비활성화됩니다.");
+        economy = new EconomyHook(this);
+        if (getServer().getPluginManager().getPlugin("Vault") != null) {
+            getServer().getServicesManager().register(
+                    Economy.class, new VaultEconomyBridge(economy), this, ServicePriority.Normal);
+            getLogger().info("Vault 경제 서비스에 자체 경제 시스템을 등록했습니다.");
         }
 
         waystoneManager = new WaystoneManager(this);
@@ -51,13 +56,16 @@ public final class EdPlugin extends JavaPlugin {
         getCommand("jobs").setExecutor(new JobsCommand(jobsManager));
         getCommand("shop").setExecutor(new ShopCommand(shopManager));
         getCommand("bounty").setExecutor(new BountyCommand(bountyManager, economy));
-        getCommand("edplugin").setExecutor(new EdPluginCommand(this, waystoneManager, jobsManager, shopManager));
+        getCommand("edplugin").setExecutor(new EdPluginCommand(this, waystoneManager, jobsManager, shopManager, economy));
 
         getLogger().info("EdPlugin이 활성화되었습니다.");
     }
 
     @Override
     public void onDisable() {
+        if (economy != null) {
+            economy.save();
+        }
         if (waystoneManager != null) {
             waystoneManager.save();
         }

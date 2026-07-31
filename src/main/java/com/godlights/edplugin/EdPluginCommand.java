@@ -1,5 +1,6 @@
 package com.godlights.edplugin;
 
+import com.godlights.edplugin.economy.EconomyHook;
 import com.godlights.edplugin.jobs.JobsManager;
 import com.godlights.edplugin.shop.ShopManager;
 import com.godlights.edplugin.waystone.WaystoneManager;
@@ -15,12 +16,15 @@ public final class EdPluginCommand implements CommandExecutor {
     private final WaystoneManager waystones;
     private final JobsManager jobs;
     private final ShopManager shops;
+    private final EconomyHook economy;
 
-    public EdPluginCommand(EdPlugin plugin, WaystoneManager waystones, JobsManager jobs, ShopManager shops) {
+    public EdPluginCommand(EdPlugin plugin, WaystoneManager waystones, JobsManager jobs, ShopManager shops,
+                            EconomyHook economy) {
         this.plugin = plugin;
         this.waystones = waystones;
         this.jobs = jobs;
         this.shops = shops;
+        this.economy = economy;
     }
 
     @Override
@@ -37,6 +41,7 @@ public final class EdPluginCommand implements CommandExecutor {
         waystones.load();
         jobs.load();
         shops.load();
+        economy.load();
         sender.sendMessage(Component.text("EdPlugin 설정과 데이터를 다시 불러왔습니다.", NamedTextColor.GREEN));
         return true;
     }

@@ -1,5 +1,11 @@
 # EdPlugin configuration
 
+economy:
+  # Starting balance for a player's first-ever balance check.
+  starting-balance: 100.0
+  currency-singular: "코인"
+  currency-plural: "코인"
+
 waystone:
   # Cost to create a new waystone (charged via Vault). 0 disables the cost.
   create-cost: 500.0
