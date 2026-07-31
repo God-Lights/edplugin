@@ -17,7 +17,7 @@ commands:
   bounty:
     description: View active bounties.
   edplugin:
-    description: Admin command for EdPlugin.
+    description: EdPlugin admin and manual command.
     aliases: [edp]
 
 permissions:
@@ -35,4 +35,7 @@ permissions:
     default: true
   edplugin.bounty.use:
     description: Allows viewing bounties.
+    default: true
+  edplugin.helper:
+    description: Allows reading the in-game manual (/edplugin helper).
     default: true
