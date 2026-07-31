@@ -71,9 +71,8 @@ public final class BountyManager {
         if (!dragonEnabled) {
             return;
         }
-        if (economy.isAvailable()) {
-            economy.deposit(killer, dragonAmount);
-        }
+        economy.withdrawTreasury(dragonAmount);
+        economy.deposit(killer, dragonAmount);
         killer.sendMessage(Component.text(
                 "엔더 드래곤 처치 현상금 " + economy.format(dragonAmount) + "을(를) 획득했습니다!", NamedTextColor.LIGHT_PURPLE));
     }
@@ -82,9 +81,8 @@ public final class BountyManager {
     public void handlePlayerKill(Player killer, Player victim) {
         Bounty victimBounty = bounties.remove(victim.getUniqueId());
         if (victimBounty != null) {
-            if (economy.isAvailable()) {
-                economy.deposit(killer, victimBounty.amount());
-            }
+            economy.withdrawTreasury(victimBounty.amount());
+            economy.deposit(killer, victimBounty.amount());
             killer.sendMessage(Component.text(
                     victim.getName() + "에게 걸린 현상금 " + economy.format(victimBounty.amount()) + "을(를) 획득했습니다!",
                     NamedTextColor.LIGHT_PURPLE));

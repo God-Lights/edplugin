@@ -65,8 +65,13 @@ public final class ShopListener implements Listener {
         Shop shop = shopOpt.get();
         Player player = event.getPlayer();
 
-        if (player.getUniqueId().equals(shop.owner()) && player.isSneaking()) {
-            player.openInventory(chest.getInventory());
+        if (player.getUniqueId().equals(shop.owner())) {
+            if (player.isSneaking()) {
+                player.openInventory(chest.getInventory());
+            } else {
+                player.sendMessage(Component.text(
+                        "본인 상점에서는 거래할 수 없습니다. 웅크리고 우클릭하면 창고를 엽니다.", NamedTextColor.RED));
+            }
             return;
         }
 
@@ -82,12 +87,9 @@ public final class ShopListener implements Listener {
             player.sendMessage(Component.text("이 상점은 이 아이템을 판매하지 않습니다.", NamedTextColor.RED));
             return;
         }
-        if (!chestInventory.containsAtLeast(new ItemStack(shop.material()), 1)) {
+        boolean serverShop = shop.owner().equals(EconomyHook.TREASURY_ID);
+        if (!serverShop && !chestInventory.containsAtLeast(new ItemStack(shop.material()), 1)) {
             player.sendMessage(Component.text("상점 재고가 없습니다.", NamedTextColor.RED));
-            return;
-        }
-        if (!economy.isAvailable()) {
-            player.sendMessage(Component.text("경제 플러그인(Vault)이 연결되어 있지 않습니다.", NamedTextColor.RED));
             return;
         }
         if (!economy.withdraw(player, shop.buyPrice())) {
@@ -95,11 +97,19 @@ public final class ShopListener implements Listener {
                     "돈이 부족합니다. (필요: " + economy.format(shop.buyPrice()) + ")", NamedTextColor.RED));
             return;
         }
-        chestInventory.removeItem(new ItemStack(shop.material(), 1));
+        if (!serverShop) {
+            chestInventory.removeItem(new ItemStack(shop.material(), 1));
+        }
         player.getInventory().addItem(new ItemStack(shop.material(), 1))
                 .values().forEach(leftover -> player.getWorld().dropItem(player.getLocation(), leftover));
-        OfflinePlayer owner = Bukkit.getOfflinePlayer(shop.owner());
-        economy.deposit(owner, shop.buyPrice() * (1 - taxRate));
+
+        if (serverShop) {
+            economy.depositTreasury(shop.buyPrice());
+        } else {
+            OfflinePlayer owner = Bukkit.getOfflinePlayer(shop.owner());
+            economy.deposit(owner, shop.buyPrice() * (1 - taxRate));
+            economy.depositTreasury(shop.buyPrice() * taxRate);
+        }
         player.sendMessage(Component.text(
                 shop.material() + " 1개를 " + economy.format(shop.buyPrice()) + "에 구매했습니다.", NamedTextColor.GREEN));
     }
@@ -114,23 +124,31 @@ public final class ShopListener implements Listener {
             player.sendMessage(Component.text("판매할 아이템을 손에 들어야 합니다: " + shop.material(), NamedTextColor.RED));
             return;
         }
-        if (chestInventory.firstEmpty() == -1 && !chestInventory.containsAtLeast(new ItemStack(shop.material()), 1)) {
+        boolean serverShop = shop.owner().equals(EconomyHook.TREASURY_ID);
+        if (!serverShop && chestInventory.firstEmpty() == -1
+                && !chestInventory.containsAtLeast(new ItemStack(shop.material()), 1)) {
             player.sendMessage(Component.text("상점 창고가 가득 찼습니다.", NamedTextColor.RED));
             return;
         }
-        if (!economy.isAvailable()) {
-            player.sendMessage(Component.text("경제 플러그인(Vault)이 연결되어 있지 않습니다.", NamedTextColor.RED));
-            return;
+
+        if (serverShop) {
+            economy.withdrawTreasury(shop.sellPrice());
+        } else {
+            OfflinePlayer owner = Bukkit.getOfflinePlayer(shop.owner());
+            if (!economy.withdraw(owner, shop.sellPrice())) {
+                player.sendMessage(Component.text("상점 주인의 잔액이 부족해 거래할 수 없습니다.", NamedTextColor.RED));
+                return;
+            }
+            economy.depositTreasury(shop.sellPrice() * taxRate);
         }
-        OfflinePlayer owner = Bukkit.getOfflinePlayer(shop.owner());
-        if (!economy.withdraw(owner, shop.sellPrice())) {
-            player.sendMessage(Component.text("상점 주인의 잔액이 부족해 거래할 수 없습니다.", NamedTextColor.RED));
-            return;
-        }
+
         inHand.setAmount(inHand.getAmount() - 1);
-        chestInventory.addItem(new ItemStack(shop.material(), 1));
-        economy.deposit(player, shop.sellPrice() * (1 - taxRate));
+        if (!serverShop) {
+            chestInventory.addItem(new ItemStack(shop.material(), 1));
+        }
+        double payout = serverShop ? shop.sellPrice() : shop.sellPrice() * (1 - taxRate);
+        economy.deposit(player, payout);
         player.sendMessage(Component.text(
-                shop.material() + " 1개를 " + economy.format(shop.sellPrice()) + "에 판매했습니다.", NamedTextColor.GREEN));
+                shop.material() + " 1개를 " + economy.format(payout) + "에 판매했습니다.", NamedTextColor.GREEN));
     }
 }

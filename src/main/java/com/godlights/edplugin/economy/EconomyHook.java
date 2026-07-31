@@ -20,6 +20,9 @@ import java.util.logging.Level;
  */
 public final class EconomyHook {
 
+    /** Reserved account id for the server treasury - never a real player's UUID (Mojang UUIDs are never nil). */
+    public static final UUID TREASURY_ID = new UUID(0L, 0L);
+
     private final JavaPlugin plugin;
     private final File file;
     private final Map<UUID, Double> balances = new ConcurrentHashMap<>();
@@ -69,6 +72,27 @@ public final class EconomyHook {
         balances.put(player.getUniqueId(), getBalance(player) + amount);
         save();
         return true;
+    }
+
+    /** Server treasury: funded by waystone fees and shop tax, spent on bounty payouts. Can go negative. */
+    public double getTreasuryBalance() {
+        return balances.getOrDefault(TREASURY_ID, 0.0);
+    }
+
+    public void depositTreasury(double amount) {
+        if (amount <= 0) {
+            return;
+        }
+        balances.merge(TREASURY_ID, amount, Double::sum);
+        save();
+    }
+
+    public void withdrawTreasury(double amount) {
+        if (amount <= 0) {
+            return;
+        }
+        balances.merge(TREASURY_ID, -amount, Double::sum);
+        save();
     }
 
     public String format(double amount) {

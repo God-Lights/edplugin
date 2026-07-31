@@ -1,5 +1,6 @@
 package com.godlights.edplugin.shop;
 
+import com.godlights.edplugin.economy.EconomyHook;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
@@ -51,7 +52,13 @@ public final class ShopCommand implements CommandExecutor {
 
     private void create(Player player, Block chestBlock, String[] args) {
         if (args.length < 3) {
-            player.sendMessage(Component.text("사용법: /shop create <구매가> <판매가> (0 = 비활성화)", NamedTextColor.RED));
+            player.sendMessage(Component.text(
+                    "사용법: /shop create <구매가> <판매가> [server] (0 = 비활성화)", NamedTextColor.RED));
+            return;
+        }
+        boolean serverShop = args.length >= 4 && args[3].equalsIgnoreCase("server");
+        if (serverShop && !player.hasPermission("edplugin.admin")) {
+            player.sendMessage(Component.text("서버 상점은 관리자만 만들 수 있습니다.", NamedTextColor.RED));
             return;
         }
         if (shops.get(chestBlock.getLocation()).isPresent()) {
@@ -73,9 +80,12 @@ public final class ShopCommand implements CommandExecutor {
             player.sendMessage(Component.text("가격은 숫자로 입력하세요.", NamedTextColor.RED));
             return;
         }
-        shops.create(new Shop(chestBlock.getLocation(), player.getUniqueId(), material, buyPrice, sellPrice));
+        var owner = serverShop ? EconomyHook.TREASURY_ID : player.getUniqueId();
+        shops.create(new Shop(chestBlock.getLocation(), owner, material, buyPrice, sellPrice));
+        String label = serverShop ? "서버 상점(재고 무한, 국고 연동)" : "상점";
         player.sendMessage(Component.text(
-                material + " 상점을 생성했습니다. (구매가 " + buyPrice + " / 판매가 " + sellPrice + ")", NamedTextColor.GREEN));
+                material + " " + label + "을(를) 생성했습니다. (구매가 " + buyPrice + " / 판매가 " + sellPrice + ")",
+                NamedTextColor.GREEN));
     }
 
     private void updatePrice(Player player, Block chestBlock, String[] args) {

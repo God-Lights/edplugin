@@ -7,9 +7,12 @@ import com.godlights.edplugin.death.DeathMessageListener;
 import com.godlights.edplugin.economy.BalanceCommand;
 import com.godlights.edplugin.economy.EconomyHook;
 import com.godlights.edplugin.economy.VaultEconomyBridge;
+import com.godlights.edplugin.grave.GraveListener;
+import com.godlights.edplugin.grave.GraveManager;
 import com.godlights.edplugin.jobs.JobsCommand;
 import com.godlights.edplugin.jobs.JobsListener;
 import com.godlights.edplugin.jobs.JobsManager;
+import com.godlights.edplugin.onboarding.GuideBookListener;
 import com.godlights.edplugin.respawn.RespawnManager;
 import com.godlights.edplugin.shop.ShopCommand;
 import com.godlights.edplugin.shop.ShopListener;
@@ -45,6 +48,7 @@ public final class EdPlugin extends JavaPlugin {
         shopManager = new ShopManager(this);
         bountyManager = new BountyManager(this, economy, jobsManager);
         RespawnManager respawnManager = new RespawnManager(this, waystoneManager);
+        GraveManager graveManager = new GraveManager(this);
 
         getServer().getPluginManager().registerEvents(new WaystoneGUI(), this);
         getServer().getPluginManager().registerEvents(new JobsListener(this, jobsManager, economy), this);
@@ -52,6 +56,8 @@ public final class EdPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new DeathMessageListener(getConfig()), this);
         getServer().getPluginManager().registerEvents(respawnManager, this);
         getServer().getPluginManager().registerEvents(new BountyListener(bountyManager), this);
+        getServer().getPluginManager().registerEvents(new GraveListener(this, graveManager, getConfig()), this);
+        getServer().getPluginManager().registerEvents(new GuideBookListener(this, economy), this);
 
         getCommand("waystone").setExecutor(new WaystoneCommand(waystoneManager, economy, getConfig()));
         getCommand("jobs").setExecutor(new JobsCommand(jobsManager));

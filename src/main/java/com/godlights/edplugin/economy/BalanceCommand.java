@@ -19,6 +19,11 @@ public final class BalanceCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (args.length >= 1 && args[0].equalsIgnoreCase("treasury")) {
+            sender.sendMessage(Component.text(
+                    "서버 국고: " + economy.format(economy.getTreasuryBalance()), NamedTextColor.GOLD));
+            return true;
+        }
         if (args.length == 0) {
             if (!(sender instanceof Player player)) {
                 sender.sendMessage(Component.text("사용법: /balance <플레이어>", NamedTextColor.RED));

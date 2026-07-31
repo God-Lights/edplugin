@@ -52,6 +52,12 @@ death-messages:
     - "%victim%: 아 시발 %killer% 뭐임"
     - "%killer%가 %weapon%(으)로 %victim%을(를) 역사 속으로 보냈다."
 
+grave:
+  enabled: true
+  # Minutes before an unclaimed grave restores the original block and
+  # drops its remaining contents on the ground.
+  expire-minutes: 30
+
 bounty:
   # Bounty payout is proportional to the victim's held balance and job levels,
   # not a fixed amount. Formula: base + (victim balance * balance-cut)

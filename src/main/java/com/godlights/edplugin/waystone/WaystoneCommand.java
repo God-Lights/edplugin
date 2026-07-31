@@ -49,10 +49,13 @@ public final class WaystoneCommand implements CommandExecutor {
                     return true;
                 }
                 double cost = config.getDouble("waystone.create-cost");
-                if (cost > 0 && economy.isAvailable() && !economy.withdraw(player, cost)) {
-                    player.sendMessage(Component.text(
-                            "돈이 부족합니다. (필요: " + economy.format(cost) + ")", NamedTextColor.RED));
-                    return true;
+                if (cost > 0) {
+                    if (!economy.withdraw(player, cost)) {
+                        player.sendMessage(Component.text(
+                                "돈이 부족합니다. (필요: " + economy.format(cost) + ")", NamedTextColor.RED));
+                        return true;
+                    }
+                    economy.depositTreasury(cost);
                 }
                 manager.create(name, player.getLocation(), player.getName());
                 player.sendMessage(Component.text("웨이스톤 '" + name + "'을(를) 생성했습니다.", NamedTextColor.GREEN));
@@ -80,10 +83,13 @@ public final class WaystoneCommand implements CommandExecutor {
 
     private void handleTeleport(Player player, Waystone waystone) {
         double cost = config.getDouble("waystone.teleport-cost");
-        if (cost > 0 && economy.isAvailable() && !economy.withdraw(player, cost)) {
-            player.sendMessage(Component.text(
-                    "돈이 부족합니다. (필요: " + economy.format(cost) + ")", NamedTextColor.RED));
-            return;
+        if (cost > 0) {
+            if (!economy.withdraw(player, cost)) {
+                player.sendMessage(Component.text(
+                        "돈이 부족합니다. (필요: " + economy.format(cost) + ")", NamedTextColor.RED));
+                return;
+            }
+            economy.depositTreasury(cost);
         }
         player.teleport(waystone.location());
         player.sendMessage(Component.text("웨이스톤 '" + waystone.name() + "'(으)로 이동했습니다.", NamedTextColor.GREEN));
