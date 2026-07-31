@@ -99,6 +99,7 @@ public final class EdPluginCommand implements CommandExecutor {
 
         lines.add("&e[사망과 부활]");
         lines.add("&f죽으면 " + c.getInt("respawn.delay-seconds") + "초간 그 자리에서 관전 모드가 됩니다 (위치 고정, 벽 너머는 못 봄).");
+        lines.add("&f서버를 나갔다 들어오거나 게임모드를 바꾸려 해도 이 시간은 계속 흐르고 관전 상태가 유지됩니다.");
         lines.add("&f시간이 지나면 웨이스톤을 골라서 그 자리에서 부활합니다.");
 
         lines.add("&e[현상금]");
