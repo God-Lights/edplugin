@@ -4,6 +4,7 @@ import com.godlights.edplugin.bounty.BountyCommand;
 import com.godlights.edplugin.bounty.BountyListener;
 import com.godlights.edplugin.bounty.BountyManager;
 import com.godlights.edplugin.death.DeathMessageListener;
+import com.godlights.edplugin.economy.BalanceCommand;
 import com.godlights.edplugin.economy.EconomyHook;
 import com.godlights.edplugin.economy.VaultEconomyBridge;
 import com.godlights.edplugin.jobs.JobsCommand;
@@ -56,6 +57,7 @@ public final class EdPlugin extends JavaPlugin {
         getCommand("jobs").setExecutor(new JobsCommand(jobsManager));
         getCommand("shop").setExecutor(new ShopCommand(shopManager));
         getCommand("bounty").setExecutor(new BountyCommand(bountyManager, economy));
+        getCommand("balance").setExecutor(new BalanceCommand(economy));
         getCommand("edplugin").setExecutor(new EdPluginCommand(this, waystoneManager, jobsManager, shopManager, economy));
 
         getLogger().info("EdPlugin이 활성화되었습니다.");

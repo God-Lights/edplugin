@@ -10,39 +10,13 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public final class EdPluginCommand implements CommandExecutor {
-
-    private static final List<String> MANUAL = List.of(
-            "&6=== EdPlugin 게임 설명서 ===",
-            "&e[웨이스톤]",
-            "&7/waystone create <이름> &f- 지금 위치에 웨이스톤 생성",
-            "&7/waystone 또는 /waystone list &f- 목록 GUI에서 골라서 이동",
-            "&7/waystone remove <이름> &f- 웨이스톤 삭제",
-            "&e[직업]",
-            "&f채굴, 벌목, 농사, 사냥을 하면 자동으로 돈과 경험치를 얻습니다.",
-            "&f레벨이 오르면 지급액과 보너스 드랍 확률이 함께 올라갑니다.",
-            "&7/jobs &f- 내 직업 레벨과 경험치 확인",
-            "&e[개인 상점]",
-            "&f상자를 바라본 채로 파는 아이템을 손에 들고 명령어를 입력하세요.",
-            "&7/shop create <구매가> <판매가> &f- 상점 생성 (0을 넣으면 그 방향 비활성화)",
-            "&f상자 우클릭 = 구매, 웅크리고 우클릭 = 판매",
-            "&7/shop price <구매가> <판매가> &f- 가격 변경 (주인만)",
-            "&7/shop remove &f- 상점 삭제 (주인만)",
-            "&e[사망과 부활]",
-            "&f죽으면 10초간 그 자리에서 관전 모드가 됩니다 (위치 고정, 벽 너머는 못 봄).",
-            "&f10초가 지나면 웨이스톤을 골라서 그 자리에서 부활합니다.",
-            "&e[현상금]",
-            "&f다른 플레이어를 죽이면 죽인 사람에게 현상금이 걸립니다 (국고 지급).",
-            "&f이미 현상금이 걸린 사람을 죽이면 새 현상금 대신 그 현상금을 받습니다.",
-            "&f현상금 대상이 100블록 이내로 오면 근처 플레이어에게 경고가 뜹니다.",
-            "&f현상금은 30일 뒤 만료되고, 엔더 드래곤에게는 영구 현상금이 걸려 있습니다.",
-            "&7/bounty &f- 현재 걸린 현상금 목록 확인",
-            "&e[경제]",
-            "&f처음 잔액을 확인하면 기본 지급액으로 시작합니다.",
-            "&f직업 활동, 상점 거래, 현상금 등으로 잔액이 오르내립니다.");
 
     private final EdPlugin plugin;
     private final WaystoneManager waystones;
@@ -79,7 +53,7 @@ public final class EdPluginCommand implements CommandExecutor {
             sender.sendMessage(Component.text("권한이 없습니다.", NamedTextColor.RED));
             return;
         }
-        for (String line : MANUAL) {
+        for (String line : buildManual()) {
             sender.sendMessage(legacy(line));
         }
     }
@@ -95,6 +69,64 @@ public final class EdPluginCommand implements CommandExecutor {
         shops.load();
         economy.load();
         sender.sendMessage(Component.text("EdPlugin 설정과 데이터를 다시 불러왔습니다.", NamedTextColor.GREEN));
+    }
+
+    /** Built fresh from the live config each time, so numbers stay accurate after /edplugin reload. */
+    private List<String> buildManual() {
+        FileConfiguration c = plugin.getConfig();
+        List<String> lines = new ArrayList<>();
+
+        lines.add("&6=== EdPlugin 게임 설명서 ===");
+
+        lines.add("&e[웨이스톤]");
+        lines.add("&7/waystone create <이름> &f- 지금 위치에 웨이스톤 생성 (비용: " + economy.format(c.getDouble("waystone.create-cost")) + ")");
+        lines.add("&7/waystone 또는 /waystone list &f- 목록 GUI에서 골라서 이동 (비용: " + economy.format(c.getDouble("waystone.teleport-cost")) + ")");
+        lines.add("&7/waystone remove <이름> &f- 웨이스톤 삭제");
+
+        lines.add("&e[직업]");
+        lines.add("&f채굴(광부), 벌목(벌목꾼), 수확(농부), 몹 사냥(사냥꾼)을 하면 자동으로 돈과 경험치를 얻습니다.");
+        lines.add("&f레벨당 지급액 +" + percent(c.getDouble("jobs.pay-bonus-per-level"))
+                + ", 보너스 드랍 확률 +" + percent(c.getDouble("jobs.bonus-drop-chance-per-level"))
+                + " (최대 레벨 " + c.getInt("jobs.max-level") + ")");
+        lines.add("&7/jobs &f- 내 직업 레벨과 경험치 확인");
+
+        lines.add("&e[개인 상점]");
+        lines.add("&f상자를 바라본 채로 파는 아이템을 손에 들고 명령어를 입력하세요.");
+        lines.add("&7/shop create <구매가> <판매가> &f- 상점 생성 (0을 넣으면 그 방향 비활성화)");
+        lines.add("&f상자 우클릭 = 구매, 웅크리고 우클릭 = 판매 (거래 수수료 " + percent(c.getDouble("shop.tax-rate")) + ")");
+        lines.add("&7/shop price <구매가> <판매가> &f- 가격 변경 (주인만)");
+        lines.add("&7/shop remove &f- 상점 삭제 (주인만)");
+
+        lines.add("&e[사망과 부활]");
+        lines.add("&f죽으면 " + c.getInt("respawn.delay-seconds") + "초간 그 자리에서 관전 모드가 됩니다 (위치 고정, 벽 너머는 못 봄).");
+        lines.add("&f시간이 지나면 웨이스톤을 골라서 그 자리에서 부활합니다.");
+
+        lines.add("&e[현상금]");
+        lines.add("&f다른 플레이어를 죽이면 죽인 사람에게 현상금이 걸립니다 (국고 지급).");
+        lines.add("&f기본 " + economy.format(c.getDouble("bounty.base-amount")) + " + 피해자 잔액의 "
+                + percent(c.getDouble("bounty.victim-balance-cut")) + " + 직업 레벨 1당 "
+                + economy.format(c.getDouble("bounty.per-job-level-bonus"))
+                + " (최소 " + economy.format(c.getDouble("bounty.minimum-amount"))
+                + " ~ 최대 " + economy.format(c.getDouble("bounty.maximum-amount")) + ")");
+        lines.add("&f이미 현상금이 걸린 사람을 죽이면 새 현상금 대신 그 현상금을 받습니다.");
+        lines.add("&f현상금 대상이 " + (int) c.getDouble("bounty.warning-radius") + "블록 이내로 오면 근처 플레이어에게 경고가 뜹니다.");
+        lines.add("&f현상금은 " + c.getInt("bounty.expire-days") + "일 뒤 만료되고, 엔더 드래곤에게는 "
+                + economy.format(c.getDouble("bounty.ender-dragon.amount")) + " 영구 현상금이 걸려 있습니다.");
+        lines.add("&7/bounty &f- 현재 걸린 현상금 목록 확인");
+
+        lines.add("&e[경제]");
+        lines.add("&f처음 잔액을 확인하면 " + economy.format(c.getDouble("economy.starting-balance")) + "으로 시작합니다.");
+        lines.add("&f직업 활동, 상점 거래, 현상금 등으로 잔액이 오르내립니다.");
+        lines.add("&7/balance (또는 /bal, /money) &f- 내 잔액 확인, /balance <이름>으로 다른 사람도 확인 가능");
+
+        lines.add("&e[관리자]");
+        lines.add("&7/edplugin reload &f- 설정과 데이터 다시 불러오기");
+
+        return lines;
+    }
+
+    private String percent(double fraction) {
+        return String.format(Locale.KOREA, "%.1f%%", fraction * 100);
     }
 
     private Component legacy(String line) {

@@ -16,6 +16,10 @@ commands:
     description: Manage a personal shop.
   bounty:
     description: View active bounties.
+  balance:
+    description: Check your or another player's balance.
+    aliases: [bal, money]
+    permission: edplugin.balance.use
   edplugin:
     description: EdPlugin admin and manual command.
     aliases: [edp]
@@ -38,4 +42,7 @@ permissions:
     default: true
   edplugin.helper:
     description: Allows reading the in-game manual (/edplugin helper).
+    default: true
+  edplugin.balance.use:
+    description: Allows checking balances with /balance.
     default: true
